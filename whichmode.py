@@ -39,15 +39,50 @@ modes = [get_mode(p) for p in pitches]
 # print(get_mode('C'))
 # print(search_mode(['#F']))
 def process(sharps):
+    sharps = ['#' + x for x in sharps]
     invalid = validate_sharps(sharps)
     if invalid:
         print('invalid:', invalid)
     else:
         mode = search_mode(sharps)
-        print(mode)
+        show_mode(mode)
+
+NotePoses = {}
+Picture = []
+
+def init_pic(picName):
+    i = 0
+    notePoses = []
+    del Picture[:]
+    for line in open(picName):
+        line = line.rstrip()
+        for j, c in enumerate(line):
+            if c == 'x':
+                notePoses.append((j, i))
+        Picture.append(line)
+        i += 1
+    notePoses.sort()
+    for pitch, pos in zip(pitches, notePoses):
+        NotePoses[pitch] = pos[1], pos[0]
+
+def show_mode(mode):
+    print('-'*80)
+    print('Mode: ', mode[0])
+    print('Pitches:', ' '.join(mode))
+    picture = [list(line.replace('x', ' ')) for line in Picture]
+    for pitch in mode:
+        i, j = NotePoses[pitch]
+        if len(pitch) == 1:
+            picture[i][j] = pitch
+        else:
+            picture[i][j] = pitch[1]
+            picture[i-1][j] = pitch[0]
+    print('\n'.join(''.join(line) for line in picture))
 
 if __name__ == '__main__':
-    if len(sys.argv) >= 1:
+    init_pic('pic')
+
+    if len(sys.argv) > 1:
         process(sys.argv[1:])
     else:
         current = ''
